@@ -1,0 +1,68 @@
+version: '3'
+# Docker Compose for GlobalEntry Home Assistant Services
+services:
+  
+  Galactic-Adguard:
+    image: adguard/adguardhome
+    container_name: Galactic-Adguard
+    volumes:
+      - "${ADGUARD_WORK_DIR}:/opt/adguardhome/work"
+      - "${ADGUARD_CONF_DIR}:/opt/adguardhome/conf"
+    environment:
+      - TZ=${TIMEZONE}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    restart: unless-stopped
+    network_mode: host
+  
+  Galactic-Tor:
+    image: thetorproject/obfs4-bridge:latest
+    container_name: Galactic-Tor
+    network_mode: "host"
+    user: "0:0"
+    volumes:
+      - "${TOR_CONFIG_PATH}/data:/var/lib/tor"
+      - "${TOR_CONFIG_PATH}/torrc/torrc.txt:/etc/tor/torrc"
+      - "${TOR_CONFIG_PATH}/Keys:/var/lib/tor/keys"
+      - "${TOR_CONFIG_PATH}/HiddenService:/var/lib/tor/hidden_service"
+    environment:
+      - TZ=${TIMEZONE}
+      - PUID=0
+      - PGID=0
+    command: tor -f /etc/tor/torrc
+    restart: unless-stopped
+  
+  Galactic-MTProto:
+    image: telegrammessenger/proxy:latest
+    container_name: Galactic-MTProto
+    restart: always
+    ports:
+      - "8443:443" # proxy
+      - "2398:2398" # statistics
+    environment:
+      - TAG=${MT_PROTO_TAG}
+      - SECRET=${MT_PROTO_SECRET}
+      - TZ=${TIMEZONE}
+    volumes:
+      - "${MT_PROTO_CONFIG_DIR}:/data"
+    network_mode: "bridge"
+  
+  Galactic-CloudFlare:
+    image: oznu/cloudflare-ddns
+    container_name: Galactic-CloudFlare
+    environment:
+      - ZONE=${CLOUDFLARE_ZONE}
+      - API_KEY=${CLOUDFLARE_API_KEY}
+      - PROXIED=${CLOUDFLARE_PROXIED}
+      - TZ=${TIMEZONE}
+      - CF_API=${CLOUDFLARE_API_URL}
+      - RRTYPE=${CLOUDFLARE_RRTYPE}
+      - CRON=${CLOUDFLARE_CRON}
+    restart: unless-stopped
+  
+  watchtower:
+    image: containrrr/watchtower
+    container_name: Galactic-watchtower-AI
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped

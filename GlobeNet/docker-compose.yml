@@ -1,0 +1,36 @@
+version: '3'
+# Docker Compose for GlobalEntry Network Infrastructure
+services:
+
+  NordNet-2:
+    image: ghcr.io/bubuntux/nordvpn
+    container_name: NordNet-2
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1
+      - net.ipv6.conf.all.disable_ipv6=1
+    ports:
+      - "50026:7878" # Radarr
+      - "50027:8989" # Sonarr
+      - "50029:9696" # Prowlarr
+      - "50033:8181" # Tautulli
+      - "50035:5055" # Overseer
+      - "50036:8191" # flaresolver
+      - "50000:8080" # QBitorrent
+      - "50008:6767" # Bazarr
+    environment:
+      - TOKEN=${NORDNET2_TOKEN}
+      - NETWORK=${NORDNET2_NETWORK}
+      - TECHNOLOGY=${NORDNET2_TECHNOLOGY}
+      - CONNECT=${NORDNET2_CONNECT}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    restart: unless-stopped
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: GlobeNet-Watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped

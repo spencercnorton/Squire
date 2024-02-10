@@ -1,0 +1,127 @@
+version: '3'
+# Docker Compose for GlobalEntry Streaming Services
+services:
+  Galactic-Tautulli:
+    image: linuxserver/tautulli
+    container_name: Galactic-Tautulli
+    network_mode: "container:NordNet-2"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${TAUTULLI_CONFIG}:/config
+    restart: unless-stopped
+
+  Galactic-Bazarr:
+    image: linuxserver/bazarr
+    container_name: Galactic-Bazarr
+    network_mode: "container:NordNet-2"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${BAZARR_CONFIG}:/config
+      - ${MEDIA_VOLUME_1}:/files
+      - ${TB21}:/21TB
+      - ${CACHE}:/complete
+    restart: unless-stopped
+
+  Galactic-QBT-Titan:
+    image: linuxserver/qbittorrent
+    container_name: Galactic-QBT-Titan
+    network_mode: "container:NordNet-1"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${QBITTORRENT2_CONFIG}:/config
+      - ${TORRENT_TITAN}:/complete
+
+  Galactic-Prowlarr:
+    image: linuxserver/prowlarr
+    container_name: Galactic-Prowlarr
+    network_mode: "container:NordNet-2"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${PROWLARR_CONFIG}:/config
+
+  Galactic-Sonarr:
+    image: linuxserver/sonarr
+    container_name: Galactic-Sonarr
+    network_mode: "container:NordNet-2"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${SONARR_CONFIG}:/config
+      - ${MEDIA_VOLUME_1}:/files
+      - ${CACHE}:/complete
+      - ${TB21}:/21TB
+      - ${TORRENT_SYNO}:/syno
+
+  Galactic-Radarr:
+    image: linuxserver/radarr
+    container_name: Galactic-Radarr
+    network_mode: "container:NordNet-2"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${RADARR_CONFIG}:/config
+      - ${MEDIA_VOLUME_1}:/files
+      - ${CACHE}:/complete
+      - ${TB21}:/21TB
+      - ${TORRENT_SYNO}:/syno
+
+  Galactic-Overseerr:
+    image: linuxserver/overseerr:latest
+    container_name: Galactic-Overseerr
+    network_mode: "container:NordNet-2"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${OVERSEER_CONFIG}:/config
+    restart: unless-stopped
+  
+  flaresolverr:
+    image: ghcr.io/flaresolverr/flaresolverr:latest
+    container_name: flaresolverr
+    network_mode: "container:NordNet-2"
+    environment:
+      - LOG_LEVEL=info
+      - CAPTCHA_SOLVER=none
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    restart: unless-stopped
+  
+  unpackerr:
+    image: golift/unpackerr
+    container_name: unpackerr
+    restart: unless-stopped
+    environment:
+      - TZ=${TIMEZONE}
+      - UN_SONARR_URL=http://192.168.1.24:50027
+      - UN_SONARR_API_KEY=${SONARR_API}
+      - UN_RADARR_URL=http://192.168.1.24:50026 
+      - UN_RADARR_API_KEY=${RADARR_API}
+    volumes:
+      - ${TORRENT_SYNO}:/syno # Mount point for downloads (adjust the path as needed)
+      - ${UNPACKERR_CONFIG}:/config # Where Unpackerr stores its configuration (adjust the path as needed)
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: Galactic-watchtower
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
