@@ -25,13 +25,12 @@ services:
       - ${BAZARR_CONFIG}:/config
       - ${MEDIA_VOLUME_1}:/files
       - ${TB21}:/21TB
-      - ${CACHE}:/complete
     restart: unless-stopped
 
   Galactic-QBT-Titan:
     image: linuxserver/qbittorrent
     container_name: Galactic-QBT-Titan
-    network_mode: "container:NordNet-1"
+    network_mode: "container:NordNet-2"
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
@@ -39,6 +38,18 @@ services:
     volumes:
       - ${QBITTORRENT2_CONFIG}:/config
       - ${TORRENT_TITAN}:/complete
+
+  Galactic-QBT-Squire:
+    image: linuxserver/qbittorrent
+    container_name: Galactic-QBT-Squire
+    network_mode: "container:NordNet-1"
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    volumes:
+      - ${QBITTORRENT1_CONFIG}:/config
+      - ${TB1CACHE}:/complete1
 
   Galactic-Prowlarr:
     image: linuxserver/prowlarr
@@ -62,9 +73,10 @@ services:
     volumes:
       - ${SONARR_CONFIG}:/config
       - ${MEDIA_VOLUME_1}:/files
-      - ${CACHE}:/complete
       - ${TB21}:/21TB
-      - ${TORRENT_SYNO}:/syno
+      - ${TORRENT_TITAN}:/TorrentTitan
+      - ${TB1CACHE}:/TorrentSquire
+      - ${SEEDBOX}:/seedbox
 
   Galactic-Radarr:
     image: linuxserver/radarr
@@ -77,9 +89,10 @@ services:
     volumes:
       - ${RADARR_CONFIG}:/config
       - ${MEDIA_VOLUME_1}:/files
-      - ${CACHE}:/complete
       - ${TB21}:/21TB
-      - ${TORRENT_SYNO}:/syno
+      - ${TORRENT_TITAN}:/TorrentTitan
+      - ${TB1CACHE}:/TorrentSquire
+      - ${SEEDBOX}:/seedbox
 
   Galactic-Overseerr:
     image: linuxserver/overseerr:latest
@@ -104,7 +117,7 @@ services:
       - PGID=${PGID}
       - TZ=${TIMEZONE}
     restart: unless-stopped
-  
+  #Uncompressed downloaded files
   unpackerr:
     image: golift/unpackerr
     container_name: unpackerr
@@ -116,8 +129,20 @@ services:
       - UN_RADARR_URL=http://192.168.1.24:50026 
       - UN_RADARR_API_KEY=${RADARR_API}
     volumes:
-      - ${TORRENT_SYNO}:/syno # Mount point for downloads (adjust the path as needed)
-      - ${UNPACKERR_CONFIG}:/config # Where Unpackerr stores its configuration (adjust the path as needed)
+      - ${TORRENT_TITAN}:/TorrentTitan
+      - ${TB1CACHE}:/TorrentSquire
+      - ${UNPACKERR_CONFIG}:/config 
+  
+  #Galactic-Membarr:
+  #  image: yoruio/membarr
+  #  container_name: Galactic-Membarr
+  #  network_mode: host
+  #  environment:
+  #    - TOKEN=${MEMBARR_TOKEN}
+  #    - TZ=${TIMEZONE}
+  #  volumes:
+  #    - ${MEMBARR_CONFIG}:/app/app/config
+  #  restart: unless-stopped
 
   watchtower:
     image: containrrr/watchtower
