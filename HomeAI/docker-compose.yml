@@ -1,7 +1,7 @@
 version: '3'
 # Docker Compose for GlobalEntry Home Assistant Services
 services:
-  
+  #Private DNS with Adblock
   Galactic-Adguard:
     image: adguard/adguardhome
     container_name: Galactic-Adguard
@@ -14,7 +14,7 @@ services:
       - PGID=${PGID}
     restart: unless-stopped
     network_mode: host
-  
+  #Tor Relay Service
   Galactic-Tor:
     image: thetorproject/obfs4-bridge:latest
     container_name: Galactic-Tor
@@ -31,7 +31,7 @@ services:
       - PGID=0
     command: tor -f /etc/tor/torrc
     restart: unless-stopped
-  
+  #Proxy for Telegram Services
   Galactic-MTProto:
     image: telegrammessenger/proxy:latest
     container_name: Galactic-MTProto
@@ -46,7 +46,7 @@ services:
     volumes:
       - "${MT_PROTO_CONFIG_DIR}:/data"
     network_mode: "bridge"
-  
+  #CloudFlare DDNS Service
   Galactic-CloudFlare:
     image: oznu/cloudflare-ddns
     container_name: Galactic-CloudFlare
