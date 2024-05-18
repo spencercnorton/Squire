@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 # Docker Compose for GlobalEntry Home Assistant Services
 services:
   #Private DNS with Adblock
