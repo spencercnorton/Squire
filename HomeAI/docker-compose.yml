@@ -3,7 +3,7 @@ version: '3.8'
 services:
   #Private DNS with Adblock
   Galactic-Adguard:
-    image: adguard/adguardhome
+    image: adguard/adguardhome:latest
     container_name: Galactic-Adguard
     volumes:
       - "${ADGUARD_WORK_DIR}:/opt/adguardhome/work"
@@ -14,21 +14,34 @@ services:
       - PGID=${PGID}
     restart: unless-stopped
     network_mode: host
+  #HomeBridge
+  Galactic-Homebridge:
+    image: homebridge/homebridge:latest
+    container_name: Galactic-Homebridge
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      - TZ=${TIMEZONE}
+      - PUID=${PUID}
+      - PGID=${PGID}
+    volumes:
+      - ${HOMEBRIDGE_CONFIG_DIR}:/homebridge
   #Tor Relay Service
   Galactic-Tor:
     image: thetorproject/obfs4-bridge:latest
     container_name: Galactic-Tor
     network_mode: "host"
-    user: "0:0"
+    user: "1000:1000"
     volumes:
       - "${TOR_CONFIG_PATH}/data:/var/lib/tor"
-      - "${TOR_CONFIG_PATH}/torrc/torrc.txt:/etc/tor/torrc"
+      - "${TOR_CONFIG_PATH}/torrc/torrc:/etc/tor/torrc"
       - "${TOR_CONFIG_PATH}/Keys:/var/lib/tor/keys"
       - "${TOR_CONFIG_PATH}/HiddenService:/var/lib/tor/hidden_service"
+      - "${TOR_CONFIG_PATH}/logs:/var/log/tor"
     environment:
       - TZ=${TIMEZONE}
-      - PUID=0
-      - PGID=0
+      - PUID=${PUID}
+      - PGID=${PGID}
     command: tor -f /etc/tor/torrc
     restart: unless-stopped
   #Proxy for Telegram Services
@@ -48,7 +61,7 @@ services:
     network_mode: "bridge"
   #CloudFlare DDNS Service
   Galactic-CloudFlare:
-    image: oznu/cloudflare-ddns
+    image: oznu/cloudflare-ddns:latest
     container_name: Galactic-CloudFlare
     environment:
       - ZONE=${CLOUDFLARE_ZONE}
