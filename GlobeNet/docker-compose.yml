@@ -19,6 +19,7 @@ services:
       - "50036:8191" # flaresolver
       - "50000:8080" # QBitorrent
       - "50008:6767" # Bazarr
+      - "50009:1080" # Socks Proxy
     environment:
       - TOKEN=${NORDNET2_TOKEN}
       - NETWORK=${NORDNET2_NETWORK}
@@ -38,6 +39,7 @@ services:
       - net.ipv6.conf.all.disable_ipv6=1
     ports:
       - "50001:8080" # QBitorrent
+      - "50002:1080" # Socks Proxy
     environment:
       - TOKEN=${NORDNET2_TOKEN}
       - NETWORK=${NORDNET2_NETWORK}
@@ -45,6 +47,24 @@ services:
       - CONNECT=${NORDNET1_CONNECT}
       - PUID=${PUID}
       - PGID=${PGID}
+    restart: unless-stopped
+  
+  NordNet-1-Proxy:
+    image: xkuma/socks5
+    container_name: NordNet-1-Proxy
+    network_mode: "container:NordNet-1"
+    environment:
+      - PROXY_USER=${PROXYUN1}
+      - PROXY_PASSWORD=${PROXYPW1}
+    restart: unless-stopped
+  
+  NordNet-2-Proxy:
+    image: xkuma/socks5
+    container_name: NordNet-2-Proxy
+    network_mode: "container:NordNet-2"
+    environment:
+      - PROXY_USER=${PROXYUN2}
+      - PROXY_PASSWORD=${PROXYPW2}
     restart: unless-stopped
 
   watchtower:
